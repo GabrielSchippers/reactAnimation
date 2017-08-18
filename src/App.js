@@ -217,7 +217,7 @@ class App extends Component {
     do {
       left = this.getRandomX();
       top = this.getRandomY();
-      circleSize = Math.floor(Math.random()*160+90);
+      circleSize = Math.floor(Math.random()*120+100);
       circleColor = this.getRandomColor();
       fontSize = circleSize * 0.6;
       movementX = this.getRandomVectorComponent()
