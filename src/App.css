@@ -42,16 +42,17 @@
     }
   }
   
-  @keyframes splash {
+  @keyframes shrink {
     from {
         opacity: 0;
-        transform: scale(0, 0);
-    }
-    to {
         transform: scale(1, 1);
     }
+    to {
+        transform: scale(0, 0);
+        opacity: 0;
+    }
   }  
-@keyframes addsplash {
+ @keyframes addsplash {
     from {
         opacity: 0;
         transform: scale(0, 0);
@@ -87,8 +88,8 @@
 
     z-index: -1;
   }
-  .Circle-Splash {
-      animation: splash 4s normal forwards ease-out;
+  .Circle-Shrink {
+      animation: shrink 4s normal forwards ease-out;
   }
   .Add-Splash {
     animation: addsplash 4s normal forwards ease-out;

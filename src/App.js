@@ -4,6 +4,7 @@ import logo from './logo.svg';
 import './App.css';
 
 const maxVelocity = 1
+const bubbleCount = 7
 
 const circleData = {
   "price": [15, 30, 45, 60, 75],
@@ -16,11 +17,13 @@ class App extends Component {
 
     this.state = {
       circleStyleArr: [],
+      queueArr:[],
       keyPos: 0,
       timeOfLastUpdate: -1
     }
 
-    this.tick = this.tick.bind(this)
+    this.tick = this.tick.bind(this);
+    this.checkQueue = this.checkQueue.bind(this)
   }
   /*
   state = {
@@ -31,10 +34,12 @@ class App extends Component {
 */
   componentDidMount () {
     this.movementTimer = setInterval(this.tick, 33);
+    this.queueTimer = setInterval(this.checkQueue, 10000);
   }
 
   componentWillUnmount () {
     clearInterval(this.movementTimer)
+    clearInterval(this.queueTimer)
   }
 
 
@@ -156,32 +161,71 @@ class App extends Component {
       })
     }
   }
+  checkQueue = () => {
+    var time = new Date();
+    var newCircleStyleArr =[];
+    if (this.state.queueArr.length) {
+      var diff = time - this.state.queueArr[0].emerTime;
+      console.log("4444", this.state.circleStyleArr);
 
-  addCircle = () => {
-    var tempArr = [];
-    let isStart = false;
-    //check start or add bubble
-    if (this.state.keyPos > 0) {
-      tempArr = [...this.state.circleStyleArr];
-
-      tempArr.shift();    
-      tempArr.push(this.genStyle(tempArr));
-    }
-    else {     
-      isStart = true;
-      for ( var i = 0; i < parseInt(this.refs['count'].value); i++ ) {
-        tempArr.push({
-          ...this.genStyle(tempArr),
-          left: this.getRandomX(),
-          top: this.getRandomY(),
+      if(diff > 10000){
+        this.state.circleStyleArr.shift()
+        var newCircleStyleArr = this.state.circleStyleArr.concat(this.state.queueArr[0]);
+        // this.state.circleStyleArr.shift();
+        // temp.push(this.state.queueArr[0]);
+        console.log("temp", newCircleStyleArr);
+        this.state.queueArr.shift();
+        this.setState({ 
+          circleStyleArr: newCircleStyleArr,
+          keyPos: this.state.keyPos+1
         });
       }
     }
     
-    this.setState({
-      circleStyleArr: tempArr,
-      keyPos: this.state.keyPos+1,
-    });
+  }
+  addCircle = () => {
+    var tempArr = [];
+    var queueArr = [];
+    let isStart = false;
+    //check start or add bubble
+    // if (this.state.keyPos > 0) {
+      tempArr = [...this.state.circleStyleArr];
+      if (tempArr.length < 7){
+        var i = 0;
+        tempArr.push(this.genStyle(tempArr));
+
+        this.setState({
+          circleStyleArr: tempArr,
+          keyPos: this.state.keyPos+i,
+          queueArr: queueArr,
+        });
+
+      }
+      else {
+        i = 1;
+        queueArr = [...this.state.queueArr]
+        queueArr.push(this.genStyle(tempArr));
+        console.log("333", queueArr);
+
+        this.setState({
+          queueArr: queueArr,
+        });
+
+      }    
+      
+    //}
+    // else {     
+      // isStart = true;
+      // for ( var i = 0; i < this.bubbleCount; i++ ) {
+      //   tempArr.push({
+      //     ...this.genStyle(tempArr),
+      //     left: this.getRandomX(),
+      //     top: this.getRandomY(),
+      //   });
+      // }
+    //}
+    
+    
 
     setTimeout(() => {
       if (!isStart) {
@@ -212,7 +256,7 @@ class App extends Component {
   }
 
   genStyle = (circleArr) => {
-    var left, top, circleSize, circleColor, fontSize, movementX, movementY, velocity;
+    var left, top, circleSize, circleColor, fontSize, movementX, movementY, velocity, currentTime;
 
     do {
       left = this.getRandomX();
@@ -220,9 +264,11 @@ class App extends Component {
       circleSize = Math.floor(Math.random()*120+100);
       circleColor = this.getRandomColor();
       fontSize = circleSize * 0.6;
-      movementX = this.getRandomVectorComponent()
-      movementY = 1 - movementX
-      velocity = Math.random() * maxVelocity
+      movementX = this.getRandomVectorComponent();
+      movementY = 1 - movementX;
+      velocity = Math.random() * maxVelocity;
+      currentTime = new Date();
+
     }
     while (this.isNotAvailable(circleArr, left, top, circleSize))
 
@@ -235,7 +281,8 @@ class App extends Component {
       'fontSize': fontSize,
       'moving': false,
       'velocity': velocity,
-      'movementVector': {x:movementX,y:movementY}
+      'movementVector': {x:movementX,y:movementY},
+      'emerTime': currentTime
     };
   }
 
@@ -263,20 +310,23 @@ class App extends Component {
         </div>
 
         <div className="circle-Control">
-          <select defaultValue={10} onChange={this.selectChange} ref='count' className="Circle-count">
+          {/* <select defaultValue={10} onChange={this.selectChange} ref='count' className="Circle-count">
             <option value={1}>1</option>
             <option value={5}>5</option>
             <option value={10}>10</option>
             <option value={20}>20</option>
-          </select>  
-          <input onClick={this.addCircle} type="button" value={this.state.keyPos>0?"Add":"Start"} />
+          </select>   */}
+          <input onClick={this.addCircle} type="button" value="Add"/>
         </div>
 
         { 
           this.state.circleStyleArr.map((item, idx) => {
+            //console.log("2222", this.state.keyPos);
+            //if (idx > this.state.circleStyleArr.length - this.state.keyPos)
             return (
               <div
-                  className={(this.state.keyPos > 1 && idx > this.state.circleStyleArr.length - this.state.keyPos) ? 'Add-Splash' : 'Circle-Splash'}
+                  className={(this.state.keyPos !== null) ? 'Add-Splash' : 'Circle-Shrink'}
+                  //className="Add-Splash"
                   key={`circle-item-${idx+this.state.keyPos}`}>
                 <div
                   className='Circle'
