@@ -25,16 +25,9 @@ class App extends Component {
     this.tick = this.tick.bind(this);
     this.checkQueue = this.checkQueue.bind(this)
   }
-  /*
-  state = {
-    circleStyleArr: [],
-    keyPos: 0,
-    timeOfLastUpdate: -1
-  }
-*/
   componentDidMount () {
     this.movementTimer = setInterval(this.tick, 33);
-    this.queueTimer = setInterval(this.checkQueue, 10000);
+    this.queueTimer = setInterval(this.checkQueue, 3000);
   }
 
   componentWillUnmount () {
@@ -52,12 +45,12 @@ class App extends Component {
 
     //check left/right boundaries
     if ((newLeft <= 0) || (newLeft + circle.width > 1920)) {
-      resolvedParameters.movementVector.x = resolvedParameters.movementVector.x * -1
+      resolvedParameters.movementVector.x *= -1
     }
 
     //check top/bottom boundaries
     if ((newTop < -30) || (newTop + circle.height > 805)) {
-      resolvedParameters.movementVector.y = resolvedParameters.movementVector.y * -1 
+      resolvedParameters.movementVector.y *= -1 
     }
 
     return resolvedParameters
@@ -111,7 +104,7 @@ class App extends Component {
     
     for (let i = 0; i < circles.length; i++) {
       for (let j = 0; j < circles.length; j++) {
-        if (i != j) {
+        if (i !== j) {
           //check collision
           let focusCircle = circles[i]
           let subjectCircle = circles[j]
@@ -138,12 +131,9 @@ class App extends Component {
 
     for (let i = 0; i < newCircleStyleArr.length; i++) {
       let circle = newCircleStyleArr[i] || {}
-
       let newLeft = circle.left + (circle.velocity * circle.movementVector.x)
       let newTop = circle.top + (circle.velocity * circle.movementVector.y)
-
       let adjustedMovementValues = this.checkBoundaryCollision(newLeft, newTop, circle)
-      //adjustedMovementValues = this.checkParticleCollision(adjustedMovementValues, this.state.circleStyleArr)
 
       circle.left = adjustedMovementValues.left
       circle.top = adjustedMovementValues.top
@@ -165,15 +155,12 @@ class App extends Component {
     var time = new Date();
     var newCircleStyleArr =[];
     if (this.state.queueArr.length) {
-      var diff = time - this.state.queueArr[0].emerTime;
-      console.log("4444", this.state.circleStyleArr);
+      var diff = time - this.state.circleStyleArr[0].emerTime;
+      console.log("diff:", diff);
 
-      if(diff > 10000){
+      if(diff > 20000){
         this.state.circleStyleArr.shift()
-        var newCircleStyleArr = this.state.circleStyleArr.concat(this.state.queueArr[0]);
-        // this.state.circleStyleArr.shift();
-        // temp.push(this.state.queueArr[0]);
-        console.log("temp", newCircleStyleArr);
+        newCircleStyleArr = this.state.circleStyleArr.concat(this.state.queueArr[0]);
         this.state.queueArr.shift();
         this.setState({ 
           circleStyleArr: newCircleStyleArr,
@@ -187,46 +174,29 @@ class App extends Component {
     var tempArr = [];
     var queueArr = [];
     let isStart = false;
-    //check start or add bubble
-    // if (this.state.keyPos > 0) {
-      tempArr = [...this.state.circleStyleArr];
-      if (tempArr.length < 7){
-        var i = 0;
-        tempArr.push(this.genStyle(tempArr));
 
-        this.setState({
-          circleStyleArr: tempArr,
-          keyPos: this.state.keyPos+i,
-          queueArr: queueArr,
-        });
+    tempArr = [...this.state.circleStyleArr];
+    if (tempArr.length < bubbleCount){
+      var i = 0;
+      tempArr.push(this.genStyle(tempArr));
 
-      }
-      else {
-        i = 1;
-        queueArr = [...this.state.queueArr]
-        queueArr.push(this.genStyle(tempArr));
-        console.log("333", queueArr);
+      this.setState({
+        circleStyleArr: tempArr,
+        keyPos: this.state.keyPos+i,
+        queueArr: queueArr,
+      });
+    }
+    else {
+      i = 1;
+      queueArr = [...this.state.queueArr]
+      queueArr.push(this.genStyle(tempArr));
+      console.log("Queued Arr:", queueArr);
+      this.setState({
+        queueArr: queueArr,
+      });
 
-        this.setState({
-          queueArr: queueArr,
-        });
-
-      }    
-      
-    //}
-    // else {     
-      // isStart = true;
-      // for ( var i = 0; i < this.bubbleCount; i++ ) {
-      //   tempArr.push({
-      //     ...this.genStyle(tempArr),
-      //     left: this.getRandomX(),
-      //     top: this.getRandomY(),
-      //   });
-      // }
-    //}
+    }     
     
-    
-
     setTimeout(() => {
       if (!isStart) {
         this.setState(update(this.state, { circleStyleArr: { [tempArr.length - 1]: { $merge: {
@@ -250,7 +220,7 @@ class App extends Component {
     let magnitude = Math.random()
     let sign = Math.random() > 0.5 ? 1 : -1
 
-    magnitude = magnitude * sign
+    magnitude *=  sign
 
     return magnitude
   }
@@ -286,6 +256,7 @@ class App extends Component {
     };
   }
 
+  // set the random unoverlapping position
   isNotAvailable = (posArr, newLeft, newTop, newSize) => {
     for (var i = 0; i < posArr.length; i ++) {
       const regLeft = posArr[i].left,
@@ -310,23 +281,14 @@ class App extends Component {
         </div>
 
         <div className="circle-Control">
-          {/* <select defaultValue={10} onChange={this.selectChange} ref='count' className="Circle-count">
-            <option value={1}>1</option>
-            <option value={5}>5</option>
-            <option value={10}>10</option>
-            <option value={20}>20</option>
-          </select>   */}
           <input onClick={this.addCircle} type="button" value="Add"/>
         </div>
 
         { 
           this.state.circleStyleArr.map((item, idx) => {
-            //console.log("2222", this.state.keyPos);
-            //if (idx > this.state.circleStyleArr.length - this.state.keyPos)
             return (
               <div
                   className={(this.state.keyPos !== null) ? 'Add-Splash' : 'Circle-Shrink'}
-                  //className="Add-Splash"
                   key={`circle-item-${idx+this.state.keyPos}`}>
                 <div
                   className='Circle'

@@ -2,3 +2,5 @@ _core.js
 node_modules
 node_modules/fbjs/lib/requestAnimationFrame.js
 node_modules/
+.DS_Store
+Archive.zip
